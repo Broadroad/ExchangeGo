@@ -92,3 +92,50 @@ func (ft *FCoin) GetTicker(currencyPair CurrencyPair) (*Ticker, error) {
 	return ticker, nil
 }
 
+// GetDepth get the depth of the currency pair
+func (ft *FCoin) GetDepth(size int, currency CurrencyPair) (*Depth, error) {
+	respmap, err := HttpGet(ft.httpClient, ft.baseUrl+fmt.Sprintf("market/depth/L20/%s", strings.ToLower(currency.ToSymbol(""))))
+	if err != nil {
+		return nil, err
+	}
+
+	if respmap["status"].(float64) != 0 {
+		return nil, errors.New(respmap["err-msg"].(string))
+	}
+
+	datamap := respmap["data"].(map[string]interface{})
+
+	bids, ok1 := datamap["bids"].([]interface{})
+	asks, ok2 := datamap["asks"].([]interface{})
+
+	if !ok1 || !ok2 {
+		return nil, errors.New("depth error")
+	}
+
+	depth := new(Depth)
+	depth.Pair = currency
+
+	n := 0
+	for i := 0; i < len(bids); {
+		depth.BidList = append(depth.BidList, DepthRecord{ToFloat64(bids[i]), ToFloat64(bids[i+1])})
+		i += 2
+		n++
+		if n == size {
+			break
+		}
+	}
+
+	n = 0
+	for i := 0; i < len(asks); {
+		depth.AskList = append(depth.AskList, DepthRecord{ToFloat64(asks[i]), ToFloat64(asks[i+1])})
+		i += 2
+		n++
+		if n == size {
+			break
+		}
+	}
+
+	//sort.Sort(sort.Reverse(depth.AskList))
+	return depth, nil
+}
+

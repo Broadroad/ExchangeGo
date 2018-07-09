@@ -13,3 +13,46 @@ type Ticker struct {
 	Vol          float64      `json:"vol"`
 	Date         uint64       `json:"date"` // unit second
 }
+
+type Currency struct {
+	Symbol string
+	Desc   string
+}
+
+func (c Currency) String() string {
+	return c.Symbol
+}
+
+// A->B(A buy B)
+type CurrencyPair struct {
+	CurrencyA Currency
+	CurrencyB Currency
+}
+
+type DepthRecord struct {
+	Price,
+	Amount float64
+}
+
+type DepthRecords []DepthRecord
+
+func (dr DepthRecords) Len() int {
+	return len(dr)
+}
+
+func (dr DepthRecords) Swap(i, j int) {
+	dr[i], dr[j] = dr[j], dr[i]
+}
+
+func (dr DepthRecords) Less(i, j int) bool {
+	return dr[i].Price < dr[j].Price
+}
+
+// Depth of CurrencyPair
+type Depth struct {
+	ContractType string // for future
+	Pair         CurrencyPair
+	UTime        time.Time
+	AskList,
+	BidList DepthRecords
+}
