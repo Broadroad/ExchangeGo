@@ -35,7 +35,7 @@ type CurrencyPair struct {
 }
 
 // ToSymbol convert to symbol
-func (pair CurrencyPair2) ToSymbol(joinChar string) string {
+func (pair CurrencyPair) ToSymbol(joinChar string) string {
 	return strings.Join([]string{pair.CurrencyA.Symbol, pair.CurrencyB.Symbol}, joinChar)
 }
 
