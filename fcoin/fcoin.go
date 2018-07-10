@@ -1,14 +1,18 @@
 package fcoin
-import(
-	"gtihub.com/exchangego/common"
+
+import (
+	"errors"
+	"fmt"
 	"net/http"
+	"strings"
+	"time"
 )
 
 const (
-	DEPTH_API       = "market/depth/%s/%s"
-	TRADE_URL       = "orders"
-	GET_ACCOUNT_API = "accounts/balance"
-	GET_ORDER_API   = "orders/%s"
+	DEPTH_API                 = "market/depth/%s/%s"
+	TRADE_URL                 = "orders"
+	GET_ACCOUNT_API           = "accounts/balance"
+	GET_ORDER_API             = "orders/%s"
 	GET_UNFINISHED_ORDERS_API = "getUnfinishedOrdersIgnoreTradeType"
 	PLACE_ORDER_API           = "order"
 	WITHDRAW_API              = "withdraw"
@@ -138,4 +142,3 @@ func (ft *FCoin) GetDepth(size int, currency CurrencyPair) (*Depth, error) {
 	//sort.Sort(sort.Reverse(depth.AskList))
 	return depth, nil
 }
-

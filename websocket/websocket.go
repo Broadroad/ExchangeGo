@@ -1,9 +1,10 @@
 package websocket
 
 import (
-	"github.com/gorilla/websocket"
 	"log"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type WsConn struct {
@@ -18,7 +19,7 @@ type WsConn struct {
 }
 
 const (
-	SUB_TICKER      = 1 + iota
+	SUB_TICKER = 1 + iota
 	SUB_ORDERBOOK
 	SUB_KLINE_1M
 	SUB_KLINE_15M
@@ -68,4 +69,88 @@ func (ws *WsConn) ReConnect() {
 			}
 		}
 	}()
+}
+
+// Heartbeat keep alive with server
+func (ws *WsConn) Heartbeat(heartbeat func() interface{}, interval time.Duration) {
+	ws.heartbeatIntervalTime = interval
+	ws.checkConnectIntervalTime = 2 * ws.heartbeatIntervalTime
+
+	timer := time.NewTimer(interval)
+	go func() {
+		for {
+			select {
+			case <-timer.C:
+				err := ws.WriteJSON(heartbeat())
+				if err != nil {
+					log.Println("heartbeat error , ", err)
+					time.Sleep(time.Second)
+				}
+				timer.Reset(interval)
+			case <-ws.close:
+				timer.Stop()
+				log.Println("close websocket connect , exiting heartbeat goroutine.")
+				return
+			}
+		}
+	}()
+}
+
+// Subscribe subscribe some topic
+func (ws *WsConn) Subscribe(subEvent interface{}) error {
+	err := ws.WriteJSON(subEvent)
+	if err != nil {
+		return err
+	}
+	ws.subs = append(ws.subs, subEvent)
+	return nil
+}
+
+// ReceiveMessage handle message from server
+func (ws *WsConn) ReceiveMessage(handle func(msg []byte)) {
+	go func() {
+		for {
+			t, msg, err := ws.ReadMessage()
+			if err != nil {
+				log.Println(err)
+				if ws.isClose {
+					log.Println("exiting receive message goroutine.")
+					break
+				}
+				time.Sleep(time.Second)
+				continue
+			}
+			switch t {
+			case websocket.TextMessage, websocket.BinaryMessage:
+				handle(msg)
+			case websocket.PongMessage:
+				ws.actived = time.Now()
+			case websocket.CloseMessage:
+				ws.CloseWs()
+				return
+			default:
+				log.Println("error websocket message type , content is :\n", string(msg))
+			}
+		}
+	}()
+}
+
+//UpdateActivedTime update websocket actived time
+func (ws *WsConn) UpdateActivedTime() {
+	ws.actived = time.Now()
+}
+
+// CloseWs close websocket
+func (ws *WsConn) CloseWs() {
+	ws.close <- 1 //exit reconnect goroutine
+	if ws.heartbeatIntervalTime > 0 {
+		ws.close <- 1 //exit heartbeat goroutine
+	}
+
+	err := ws.Close()
+	if err != nil {
+		log.Println("close websocket connect error , ", err)
+	}
+
+	ws.isClose = true
 }
