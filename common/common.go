@@ -1,6 +1,9 @@
 package common
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type Ticker struct {
 	ContractType string       `json:"omitempty"`
@@ -29,6 +32,11 @@ func (c Currency) String() string {
 type CurrencyPair struct {
 	CurrencyA Currency
 	CurrencyB Currency
+}
+
+// ToSymbol convert to symbol
+func (pair CurrencyPair2) ToSymbol(joinChar string) string {
+	return strings.Join([]string{pair.CurrencyA.Symbol, pair.CurrencyB.Symbol}, joinChar)
 }
 
 type DepthRecord struct {
