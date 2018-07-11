@@ -60,6 +60,7 @@ func (hb *Huobi) createWsConn() {
 			return
 		}
 
+		log.Println(datamap)
 		if datamap["ping"] != nil {
 			//log.Println(datamap)
 			hb.ws.UpdateActivedTime()
@@ -78,13 +79,13 @@ func (hb *Huobi) createWsConn() {
 			return
 		}
 
-		ch, isok := datamap["ch"].(string)
+		_, isok := datamap["ch"].(string)
 		if !isok {
 			log.Println("error:", string(data))
 			return
 		}
 
-		tick := datamap["tick"].(map[string]interface{})
+		//tick := datamap["tick"].(map[string]interface{})
 	})
 }
 

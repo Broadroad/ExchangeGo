@@ -28,7 +28,7 @@ func (c Currency) String() string {
 	return c.Symbol
 }
 
-// A->B(A buy B)
+// CurrencyPair means A->B(A buy B)
 type CurrencyPair struct {
 	CurrencyA Currency
 	CurrencyB Currency
