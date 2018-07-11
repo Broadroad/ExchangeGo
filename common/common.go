@@ -1,7 +1,6 @@
 package common
 
 import (
-	"strings"
 	"time"
 )
 
@@ -17,26 +16,6 @@ type Ticker struct {
 	Low          float64      `json:"low"`
 	Vol          float64      `json:"vol"`
 	Date         uint64       `json:"date"` // unit second
-}
-
-type Currency struct {
-	Symbol string
-	Desc   string
-}
-
-func (c Currency) String() string {
-	return c.Symbol
-}
-
-// CurrencyPair means A->B(A buy B)
-type CurrencyPair struct {
-	CurrencyA Currency
-	CurrencyB Currency
-}
-
-// ToSymbol convert to symbol
-func (pair CurrencyPair) ToSymbol(joinChar string) string {
-	return strings.Join([]string{pair.CurrencyA.Symbol, pair.CurrencyB.Symbol}, joinChar)
 }
 
 type DepthRecord struct {

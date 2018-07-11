@@ -79,13 +79,24 @@ func (hb *Huobi) createWsConn() {
 			return
 		}
 
-		_, isok := datamap["ch"].(string)
+		ch, isok := datamap["ch"].(string)
 		if !isok {
 			log.Println("error:", string(data))
 			return
 		}
 
-		//tick := datamap["tick"].(map[string]interface{})
+		tick := datamap["tick"].(map[string]interface{})
+
+		low, isok := tick["low"].(float64)
+		if !isok {
+			log.Println("error:", isok)
+			return
+		}
+		ticker := &Ticker{Low: low}
+		if hb.wsTickerHandleMap[ch] != nil {
+			(hb.wsTickerHandleMap[ch])(ticker)
+		}
+
 	})
 }
 

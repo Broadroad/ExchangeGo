@@ -13,8 +13,8 @@ func TestGetTickerWithWs(t *testing.T) {
 	hb := NewHuobi(&http.Client{}, "", "", "")
 	hb.createWsConn()
 	hb.GetTickerWithWs(common.BTC_USDT, func(ticker *common.Ticker) {
-		log.Println(*ticker)
+		log.Println(ticker)
 	})
-	time.Sleep(2 * time.Second)
+	time.Sleep(6 * time.Second)
 	defer hb.ws.CloseWs()
 }
