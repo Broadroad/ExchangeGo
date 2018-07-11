@@ -109,3 +109,7 @@ func (hb *Huobi) GetTickerWithWs(pair CurrencyPair, handle func(ticker *Ticker))
 		"id":  1,
 		"sub": sub})
 }
+
+func (hb *Huobi) GetExchangeName() string {
+	return HUOBI_PRO
+}

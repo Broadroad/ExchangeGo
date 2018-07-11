@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/ExchangeGo/common"
 )
 
 const (
@@ -21,7 +23,7 @@ const (
 )
 
 type FCoinTicker struct {
-	Ticker
+	common.Ticker
 	SellAmount,
 	BuyAmount float64
 }
@@ -141,4 +143,8 @@ func (ft *FCoin) GetDepth(size int, currency CurrencyPair) (*Depth, error) {
 
 	//sort.Sort(sort.Reverse(depth.AskList))
 	return depth, nil
+}
+
+func (fc *FCoin) GetExchangeName() string {
+	return FCOIN
 }
