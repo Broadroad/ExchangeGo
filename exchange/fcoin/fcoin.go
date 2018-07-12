@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ExchangeGo/common"
+	. "github.com/ExchangeGo/common"
+	. "github.com/ExchangeGo/utils"
 )
 
 const (
@@ -145,6 +146,7 @@ func (ft *FCoin) GetDepth(size int, currency CurrencyPair) (*Depth, error) {
 	return depth, nil
 }
 
+// GetExchangeName return ExchangeName
 func (fc *FCoin) GetExchangeName() string {
 	return FCOIN
 }
