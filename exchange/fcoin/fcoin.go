@@ -1,14 +1,16 @@
 package fcoin
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/ExchangeGo/errors"
+
 	. "github.com/ExchangeGo/common"
 	. "github.com/ExchangeGo/utils"
+	. "github.com/ExchangeGo/api"
 )
 
 const (
@@ -23,12 +25,14 @@ const (
 	SERVER_TIME               = "public/server-time"
 )
 
+// FCoinTicker is fcoin return data format
 type FCoinTicker struct {
-	common.Ticker
+	Ticker
 	SellAmount,
 	BuyAmount float64
 }
 
+// FCoin can get fcoin.com data
 type FCoin struct {
 	httpClient *http.Client
 	baseUrl,
@@ -37,6 +41,7 @@ type FCoin struct {
 	timeoffset int64
 }
 
+// NewFCoin new a fcoin client
 func NewFCoin(client *http.Client, apikey, secretkey string) *FCoin {
 	fc := &FCoin{baseUrl: "https://api.fcoin.com/v2/", accessKey: apikey, secretKey: secretkey, httpClient: client}
 	fc.setTimeOffset()
