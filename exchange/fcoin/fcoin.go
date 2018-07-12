@@ -8,9 +8,9 @@ import (
 
 	"github.com/ExchangeGo/errors"
 
+	. "github.com/ExchangeGo/api"
 	. "github.com/ExchangeGo/common"
 	. "github.com/ExchangeGo/utils"
-	. "github.com/ExchangeGo/api"
 )
 
 const (
@@ -63,7 +63,7 @@ func (ft *FCoin) setTimeOffset() error {
 }
 
 // GetTicker get ticker data
-func (ft *FCoin) GetTicker(currencyPair CurrencyPair) (*Ticker, error) {
+func (ft *FCoin) GetTicker(currencyPair CurrencyPair) (*FCoinTicker, error) {
 	respmap, err := HttpGet(ft.httpClient, ft.baseUrl+fmt.Sprintf("market/ticker/%s",
 		strings.ToLower(currencyPair.ToSymbol(""))))
 
@@ -87,7 +87,7 @@ func (ft *FCoin) GetTicker(currencyPair CurrencyPair) (*Ticker, error) {
 		return nil, API_ERR
 	}
 
-	ticker := new(Ticker)
+	ticker := new(FCoinTicker)
 	ticker.Pair = currencyPair
 	ticker.Date = uint64(time.Now().Nanosecond() / 1000)
 	ticker.LastAmount = ToFloat64(tickmap[1])
@@ -154,4 +154,9 @@ func (ft *FCoin) GetDepth(size int, currency CurrencyPair) (*Depth, error) {
 // GetExchangeName return ExchangeName
 func (fc *FCoin) GetExchangeName() string {
 	return FCOIN
+}
+
+// GetTimeOffset
+func (fc *FCoin) GetTimeOffset() int64 {
+	return fc.timeoffset
 }
