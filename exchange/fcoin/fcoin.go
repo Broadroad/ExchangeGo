@@ -11,6 +11,7 @@ import (
 	. "github.com/ExchangeGo/api"
 	. "github.com/ExchangeGo/common"
 	. "github.com/ExchangeGo/utils"
+	. "github.com/ExchangeGo/websocket"
 )
 
 const (
@@ -34,6 +35,7 @@ type FCoinTicker struct {
 
 // FCoin can get fcoin.com data
 type FCoin struct {
+	ws         *WsConn
 	httpClient *http.Client
 	baseUrl,
 	accessKey,
@@ -46,6 +48,32 @@ func NewFCoin(client *http.Client, apikey, secretkey string) *FCoin {
 	fc := &FCoin{baseUrl: "https://api.fcoin.com/v2/", accessKey: apikey, secretKey: secretkey, httpClient: client}
 	fc.setTimeOffset()
 	return fc
+}
+
+// createWsConn create a fcoin websocket
+func (fc *FCoin) createWsConn() {
+	if fc.ws != nil {
+		return
+	}
+
+	fc.ws = NewWsConn("wss://api.fcoin.com/ws")
+	fc.ws.Heartbeat(func() interface{} {
+		return map[string]interface{}{
+			"ping": time.Now().Unix()}
+	}, 5*time.Second)
+
+	fc.ws.ReConnect()
+	fc.ws.ReceiveMessage(func(msg []byte) {
+
+	})
+
+}
+
+// GetTickerWithWs get ticker with websocket
+func (fc *FCoin) GetTickerWithWs(pair CurrencyPair, handle func(ticker *Ticker)) error {
+	fc.createWsConn()
+	// TODO subscribe
+	return nil
 }
 
 // setTimeOffset get server timestamp, because server and client time can not exceed 30 seconds
