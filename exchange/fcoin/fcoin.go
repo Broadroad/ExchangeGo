@@ -1,6 +1,7 @@
 package fcoin
 
 import (
+	"log"
 	"fmt"
 	"net/http"
 	"strings"
@@ -40,12 +41,14 @@ type FCoin struct {
 	baseUrl,
 	accessKey,
 	secretKey string
-	timeoffset int64
+	timeoffset int64 	//server timestamp
+	wsTickerHandleMap map[string]func(*Ticker)
 }
 
 // NewFCoin new a fcoin client
 func NewFCoin(client *http.Client, apikey, secretkey string) *FCoin {
-	fc := &FCoin{baseUrl: "https://api.fcoin.com/v2/", accessKey: apikey, secretKey: secretkey, httpClient: client}
+	fc := &FCoin{baseUrl: "https://api.fcoin.com/v2/", accessKey: apikey, secretKey: secretkey, httpClient: client, wsTickerHandleMap: make(map[string]func(*FCoinTicker))
+}
 	fc.setTimeOffset()
 	return fc
 }
@@ -56,23 +59,62 @@ func (fc *FCoin) createWsConn() {
 		return
 	}
 
-	fc.ws = NewWsConn("wss://api.fcoin.com/ws")
-	fc.ws.Heartbeat(func() interface{} {
-		return map[string]interface{}{
-			"ping": time.Now().Unix()}
-	}, 5*time.Second)
+	fc.ws = NewWsConn("wss://api.fcoin.com/v2/ws")
 
 	fc.ws.ReConnect()
 	fc.ws.ReceiveMessage(func(msg []byte) {
+		datamap := make(map[string]interface{})
+		err := json.Unmarshal(data, &datamap)
+		if err != nil {
+			log.Println("json unmarshal error for ", string(data))
+			return
+		}
 
+		if datamap["type"] != nil {
+			tp, err := datamap["type"].(string)
+			if err != nil {
+				log.Print(errors.New("error when convert type"))
+				return
+			}
+
+			switch {
+			case tp == "hello":
+				ts, isok := datamap["ts"].(int64)
+				if !isok {
+					log.Print(errors.New("error when convert ts"))
+					return
+				}
+				fc.setTimeOffset = ts
+
+			case tp == "topics":
+				topics, err := datamap["topics"].([]string)
+				if err != nil {
+					log.Print(errors.New("error when convert topics"))
+					return
+				}
+				for topic := range topics{
+					log.Print("subscribe topic: {}", topic)
+
+				}
+			
+			case strings.Contains("ticker"):
+				log.Print("message type is ", tp)
+				ticker := datamap["tick"].([]float64)
+				log.Print(ticker)
+			}
+
+
+		}
 	})
-
 }
 
 // GetTickerWithWs get ticker with websocket
 func (fc *FCoin) GetTickerWithWs(pair CurrencyPair, handle func(ticker *Ticker)) error {
 	fc.createWsConn()
-	// TODO subscribe
+	topic := fmt.Sprintf("ticker.%s", strings.ToLower(pair.ToSymbol("")))
+	fc.wsTickerHandleMap[sub] = handle
+	return hb.ws.Subscribe(map[string]interface{}{
+]		"topic": topic})
 	return nil
 }
 

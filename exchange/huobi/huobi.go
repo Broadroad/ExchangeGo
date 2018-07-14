@@ -60,7 +60,6 @@ func (hb *Huobi) createWsConn() {
 			return
 		}
 
-		log.Println(datamap)
 		if datamap["ping"] != nil {
 			//log.Println(datamap)
 			hb.ws.UpdateActivedTime()
