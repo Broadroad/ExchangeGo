@@ -1,8 +1,9 @@
 package fcoin
 
 import (
-	"log"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -41,14 +42,14 @@ type FCoin struct {
 	baseUrl,
 	accessKey,
 	secretKey string
-	timeoffset int64 	//server timestamp
+	timeoffset        int64 //server timestamp
 	wsTickerHandleMap map[string]func(*Ticker)
 }
 
 // NewFCoin new a fcoin client
 func NewFCoin(client *http.Client, apikey, secretkey string) *FCoin {
-	fc := &FCoin{baseUrl: "https://api.fcoin.com/v2/", accessKey: apikey, secretKey: secretkey, httpClient: client, wsTickerHandleMap: make(map[string]func(*FCoinTicker))
-}
+	fc := &FCoin{baseUrl: "https://api.fcoin.com/v2/", accessKey: apikey, secretKey: secretkey, httpClient: client}
+	fc.wsTickerHandleMap = make(map[string]func(*Ticker))
 	fc.setTimeOffset()
 	return fc
 }
@@ -64,46 +65,62 @@ func (fc *FCoin) createWsConn() {
 	fc.ws.ReConnect()
 	fc.ws.ReceiveMessage(func(msg []byte) {
 		datamap := make(map[string]interface{})
-		err := json.Unmarshal(data, &datamap)
+		err := json.Unmarshal(msg, &datamap)
 		if err != nil {
-			log.Println("json unmarshal error for ", string(data))
+			log.Println("json unmarshal error for ", string(msg))
 			return
 		}
 
+		fmt.Println(datamap)
 		if datamap["type"] != nil {
-			tp, err := datamap["type"].(string)
-			if err != nil {
+			tp, isok := datamap["type"].(string)
+			if !isok {
 				log.Print(errors.New("error when convert type"))
 				return
 			}
 
 			switch {
 			case tp == "hello":
-				ts, isok := datamap["ts"].(int64)
+				ts, isok := datamap["ts"].(float64)
+				fmt.Println(ts)
 				if !isok {
 					log.Print(errors.New("error when convert ts"))
 					return
 				}
-				fc.setTimeOffset = ts
+				fc.timeoffset = int64(ts)
 
 			case tp == "topics":
-				topics, err := datamap["topics"].([]string)
-				if err != nil {
+				topics, isok := datamap["topics"].([]string)
+				if !isok {
 					log.Print(errors.New("error when convert topics"))
 					return
 				}
-				for topic := range topics{
+				for topic := range topics {
 					log.Print("subscribe topic: {}", topic)
 
 				}
-			
-			case strings.Contains("ticker"):
+
+			case strings.Contains(tp, "ticker"):
 				log.Print("message type is ", tp)
-				ticker := datamap["tick"].([]float64)
-				log.Print(ticker)
+				tickmap := datamap["ticker"].([]interface{})
+
+				ticker := new(FCoinTicker)
+				ticker.Pair = CurrencyPairMap[tp]
+				ticker.Date = uint64(time.Now().Nanosecond() / 1000)
+
+				ticker.LastDeal = ToFloat64(tickmap[0])
+				ticker.LastDealAmount = ToFloat64(tickmap[1])
+				ticker.HighBuy = ToFloat64(tickmap[2])
+				ticker.HighBuyAmount = ToFloat64(tickmap[3])
+				ticker.LowSell = ToFloat64(tickmap[4])
+				ticker.LowSellAmount = ToFloat64(tickmap[5])
+				ticker.Last24Price = ToFloat64(tickmap[6])
+				ticker.Last24HighPrice = ToFloat64(tickmap[7])
+				ticker.Last24LowPrice = ToFloat64(tickmap[8])
+				ticker.Last24Amount = ToFloat64(tickmap[9])
+				ticker.Last24BaseAmount = ToFloat64(tickmap[10])
+				fmt.Println(ticker.LastDeal)
 			}
-
-
 		}
 	})
 }
@@ -112,10 +129,13 @@ func (fc *FCoin) createWsConn() {
 func (fc *FCoin) GetTickerWithWs(pair CurrencyPair, handle func(ticker *Ticker)) error {
 	fc.createWsConn()
 	topic := fmt.Sprintf("ticker.%s", strings.ToLower(pair.ToSymbol("")))
-	fc.wsTickerHandleMap[sub] = handle
-	return hb.ws.Subscribe(map[string]interface{}{
-]		"topic": topic})
-	return nil
+	fmt.Println(topic)
+	fc.wsTickerHandleMap[topic] = handle
+	channel := []string{"ticker.btcusdt"}
+	return fc.ws.Subscribe(map[string]interface{}{
+		"cmd":  "sub",
+		"args": channel,
+		"id":   channel})
 }
 
 // setTimeOffset get server timestamp, because server and client time can not exceed 30 seconds
@@ -160,16 +180,18 @@ func (ft *FCoin) GetTicker(currencyPair CurrencyPair) (*FCoinTicker, error) {
 	ticker := new(FCoinTicker)
 	ticker.Pair = currencyPair
 	ticker.Date = uint64(time.Now().Nanosecond() / 1000)
-	ticker.LastAmount = ToFloat64(tickmap[1])
-	ticker.Last24Amount = ToFloat64(tickmap[6])
-	ticker.Last = ToFloat64(tickmap[0])
-	ticker.Vol = ToFloat64(tickmap[9])
-	ticker.Low = ToFloat64(tickmap[8])
-	ticker.High = ToFloat64(tickmap[7])
-	ticker.Buy = ToFloat64(tickmap[2])
-	ticker.Sell = ToFloat64(tickmap[4])
-	ticker.SellAmount = ToFloat64(tickmap[5])
-	ticker.BuyAmount = ToFloat64(tickmap[3])
+
+	ticker.LastDeal = ToFloat64(tickmap[0])
+	ticker.LastDealAmount = ToFloat64(tickmap[1])
+	ticker.HighBuy = ToFloat64(tickmap[2])
+	ticker.HighBuyAmount = ToFloat64(tickmap[3])
+	ticker.LowSell = ToFloat64(tickmap[4])
+	ticker.LowSellAmount = ToFloat64(tickmap[5])
+	ticker.Last24Price = ToFloat64(tickmap[6])
+	ticker.Last24HighPrice = ToFloat64(tickmap[7])
+	ticker.Last24LowPrice = ToFloat64(tickmap[8])
+	ticker.Last24Amount = ToFloat64(tickmap[9])
+	ticker.Last24BaseAmount = ToFloat64(tickmap[10])
 
 	return ticker, nil
 }

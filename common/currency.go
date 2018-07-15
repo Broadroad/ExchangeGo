@@ -25,7 +25,16 @@ var (
 	BTM_ETH = CurrencyPair{BTM, ETH}
 
 	UNKNOWN_PAIR = CurrencyPair{UNKNOWN, UNKNOWN}
+
+	// string to CurrencyPair like btcusdt -> BTC_USDT
+	CurrencyPairMap = make(map[string]CurrencyPair)
 )
+
+func init() {
+	CurrencyPairMap["btcusdt"] = BTC_USDT
+	CurrencyPairMap["eosusdt"] = EOS_USDT
+	CurrencyPairMap["btmusdt"] = BTM_USDT
+}
 
 // Symbols is a map of BTC_USDT -> btcusdt
 type Symbols map[CurrencyPair]string
@@ -106,4 +115,14 @@ func NewCurrency(symbol, desc string) Currency {
 // NewCurrencyPair return new currency pair
 func NewCurrencyPair(currencyA Currency, currencyB Currency) CurrencyPair {
 	return CurrencyPair{currencyA, currencyB}
+}
+
+// NewCurrencyPairWithString get CurrencyPair with string like btc_usdt
+func NewCurrencyPairWithString(currencyPairSymbol string) CurrencyPair {
+	currencys := strings.Split(currencyPairSymbol, "_")
+	if len(currencys) == 2 {
+		return CurrencyPair{NewCurrency(currencys[0], ""),
+			NewCurrency(currencys[1], "")}
+	}
+	return UNKNOWN_PAIR
 }
