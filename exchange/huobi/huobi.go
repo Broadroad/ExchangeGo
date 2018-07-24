@@ -110,5 +110,5 @@ func (hb *Huobi) GetTickerWithWs(pair CurrencyPair, handle func(ticker *Ticker))
 }
 
 func (hb *Huobi) GetExchangeName() string {
-	return HUOBI_PRO
+	return HUOBI
 }

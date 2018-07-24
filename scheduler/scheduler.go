@@ -1,21 +1,24 @@
 package scheduler
 
-type struct schedulerConfig {
-	fc	*fcoin.FCoin
+import (
+	"github.com/ExchangeGo/exchange/fcoin"
+	"github.com/ExchangeGo/exchange/huobi"
+)
+
+type SchedulerConfig struct {
+	fc    *fcoin.FCoin
 	huobi *huobi.Huobi
 }
 
-type struct scheduler {
-	sc schedulerConfig
+type scheduler struct {
+	sc SchedulerConfig
 }
 
-
-func NewScheduler(sc schedulerConfig) *scheduler {
+func NewScheduler(sc SchedulerConfig) *scheduler {
 	s := &scheduler{sc: sc}
 	return s
 }
 
 // Schedule schedule the cralwe tasks
-func (s *scheduler)Schedule() {
-	
+func (s *scheduler) Schedule() {
 }
