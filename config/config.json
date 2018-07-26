@@ -1,0 +1,12 @@
+{
+    "huobi": {
+        "apikey": "apikey",
+        "secret": "secret",
+        "frequence": 10 
+    },
+    "fcoin": {
+        "apikey": "apikey",
+        "secret": "secret",
+        "frequence": 10
+    }
+}

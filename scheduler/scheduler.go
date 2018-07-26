@@ -25,10 +25,10 @@ type scheduler struct {
 func NewScheduler(sc SchedulerConfig) *scheduler {
 	s := &scheduler{sc: sc}
 	if s.enablefc {
-		s.fc = fcoin.NewFCoin(&http.Client{}, "", "")
+		s.fc = fcoin.NewFCoin(http.DefaultClient, "", "")
 	}
 	if s.enablehuobi {
-		s.huobi = huobi.NewHuobi(&http.Client{}, "", "", "")
+		s.huobi = huobi.NewHuobi(http.DefaultClient, "", "", "")
 	}
 	return s
 }
