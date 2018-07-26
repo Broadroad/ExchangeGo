@@ -38,6 +38,13 @@ func NewHuobi(client *http.Client, apikey, secretkey, accountId string) *Huobi {
 	return hb
 }
 
+// Close close fcoin websocket
+func (hb *Huobi) Close() {
+	if hb.ws {
+		hb.ws.Close()
+	}
+}
+
 func (hb *Huobi) createWsConn() {
 	if hb.ws != nil {
 		return
