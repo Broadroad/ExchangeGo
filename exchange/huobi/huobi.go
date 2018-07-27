@@ -40,7 +40,7 @@ func NewHuobi(client *http.Client, apikey, secretkey, accountId string) *Huobi {
 
 // Close close fcoin websocket
 func (hb *Huobi) Close() {
-	if hb.ws {
+	if hb.ws != nil {
 		hb.ws.Close()
 	}
 }

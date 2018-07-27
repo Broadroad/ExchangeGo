@@ -56,7 +56,7 @@ func NewFCoin(client *http.Client, apikey, secretkey string) *FCoin {
 
 // Close close fcoin websocket
 func (fc *FCoin) Close() {
-	if fc.ws {
+	if fc.ws != nil {
 		fc.ws.Close()
 	}
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+
+	"github.com/ExchangeGo/scheduler"
 )
 
 const (
@@ -27,4 +29,8 @@ func main() {
 	if len(*configPath) == 0 {
 		panic(configUsage)
 	}
+
+	sc := scheduler.SchedulerConfig{Enablefc: true, Enablehuobi: false}
+	scheduler := scheduler.NewScheduler(sc)
+	scheduler.Schedule()
 }

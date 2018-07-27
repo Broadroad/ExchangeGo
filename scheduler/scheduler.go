@@ -12,8 +12,8 @@ import (
 )
 
 type SchedulerConfig struct {
-	enablefc    bool
-	enablehuobi bool
+	Enablefc    bool
+	Enablehuobi bool
 }
 
 type scheduler struct {
@@ -24,10 +24,10 @@ type scheduler struct {
 
 func NewScheduler(sc SchedulerConfig) *scheduler {
 	s := &scheduler{sc: sc}
-	if s.enablefc {
+	if sc.Enablefc {
 		s.fc = fcoin.NewFCoin(http.DefaultClient, "", "")
 	}
-	if s.enablehuobi {
+	if sc.Enablehuobi {
 		s.huobi = huobi.NewHuobi(http.DefaultClient, "", "", "")
 	}
 	return s
@@ -40,10 +40,10 @@ func (s *scheduler) Schedule() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	defer func() {
 		// close all the websocket
-		if s.fc {
+		if s.fc != nil {
 			s.fc.Close()
 		}
-		if s.huobi {
+		if s.huobi != nil {
 			s.huobi.Close()
 		}
 	}()
