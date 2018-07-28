@@ -30,7 +30,7 @@ func main() {
 		panic(configUsage)
 	}
 
-	sc := scheduler.SchedulerConfig{Enablefc: true, Enablehuobi: false}
+	sc := scheduler.SchedulerConfig{Enablefc: true, Enablehuobi: true}
 	scheduler := scheduler.NewScheduler(sc)
 	scheduler.Schedule()
 }

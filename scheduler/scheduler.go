@@ -2,11 +2,13 @@ package scheduler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/ExchangeGo/common"
 	"github.com/ExchangeGo/exchange/fcoin"
 	"github.com/ExchangeGo/exchange/huobi"
 )
@@ -17,9 +19,9 @@ type SchedulerConfig struct {
 }
 
 type scheduler struct {
-	sc    SchedulerConfig
-	fc    *fcoin.FCoin
-	huobi *huobi.Huobi
+	sc SchedulerConfig
+	fc *fcoin.FCoin
+	hb *huobi.Huobi
 }
 
 func NewScheduler(sc SchedulerConfig) *scheduler {
@@ -28,7 +30,7 @@ func NewScheduler(sc SchedulerConfig) *scheduler {
 		s.fc = fcoin.NewFCoin(http.DefaultClient, "", "")
 	}
 	if sc.Enablehuobi {
-		s.huobi = huobi.NewHuobi(http.DefaultClient, "", "", "")
+		s.hb = huobi.NewHuobi(http.DefaultClient, "", "", "")
 	}
 	return s
 }
@@ -43,8 +45,8 @@ func (s *scheduler) Schedule() {
 		if s.fc != nil {
 			s.fc.Close()
 		}
-		if s.huobi != nil {
-			s.huobi.Close()
+		if s.hb != nil {
+			s.hb.Close()
 		}
 	}()
 
@@ -59,7 +61,18 @@ func (s *scheduler) Schedule() {
 	// expected signal (as indicated by the goroutine
 	// above sending a value on `done`) and then exit.
 	fmt.Println("awaiting signal")
+
+	go s.schedule()
+
 	<-done
 	fmt.Println("exiting")
 
+}
+
+func (s *scheduler) schedule() {
+	if s.sc.Enablehuobi {
+		s.hb.GetTickerWithWs(common.BTC_USDT, func(ticker *common.Ticker) {
+			log.Println(ticker)
+		})
+	}
 }
