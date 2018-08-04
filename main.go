@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/ExchangeGo/config"
 	"github.com/ExchangeGo/scheduler"
 )
 
@@ -26,11 +27,25 @@ func main() {
 		}
 	}()
 
+	fmt.Println(*configPath)
+
+	var sc scheduler.SchedulerConfig
+	fmt.Println("hello ", sc)
 	if len(*configPath) == 0 {
 		panic(configUsage)
+	} else {
+		config := config.NewConfig(*configPath)
+		// Parse config to Scheduler config
+		if config.Huobi != nil {
+			sc.Enablehuobi = true
+			sc.HuobiConfig = config.Huobi
+		}
+		if config.FCoin != nil {
+			sc.Enablefc = true
+			sc.FCoinConfig = config.FCoin
+		}
 	}
 
-	sc := scheduler.SchedulerConfig{Enablefc: true, Enablehuobi: true}
 	scheduler := scheduler.NewScheduler(sc)
 	scheduler.Schedule()
 }

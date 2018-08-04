@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/ExchangeGo/common"
+	"github.com/ExchangeGo/config"
 	"github.com/ExchangeGo/exchange/fcoin"
 	"github.com/ExchangeGo/exchange/huobi"
 )
@@ -16,6 +17,9 @@ import (
 type SchedulerConfig struct {
 	Enablefc    bool
 	Enablehuobi bool
+
+	HuobiConfig *config.HuobiConfig
+	FCoinConfig *config.FCoinConfig
 }
 
 type scheduler struct {
@@ -72,6 +76,7 @@ func (s *scheduler) Schedule() {
 func (s *scheduler) schedule() {
 	if s.sc.Enablehuobi {
 		s.hb.GetTickerWithWs(common.BTC_USDT, func(ticker *common.Ticker) {
+			log.Println("get result")
 			log.Println(ticker)
 		})
 	}

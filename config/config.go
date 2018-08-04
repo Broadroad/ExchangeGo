@@ -18,8 +18,8 @@ type FCoinConfig struct {
 }
 
 type Config struct {
-	Huobi HuobiConfig
-	FCoin FCoinConfig
+	Huobi *HuobiConfig
+	FCoin *FCoinConfig
 }
 
 func NewConfig(path string) *Config {
