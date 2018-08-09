@@ -11,12 +11,12 @@ var (
 	y     int
 	h     bool
 	ans   = 0
-	flags [][]bool
+	flags map[string]bool // x_y means (x,y) -> bool (already or not)
 )
 
 func init() {
-	flag.IntVar(&x, "x", 20, "x is rows")
-	flag.IntVar(&y, "y", 20, "y is cols")
+	flag.IntVar(&x, "x", 0, "x is start x")
+	flag.IntVar(&y, "y", 0, "y is start y")
 }
 
 // isGreatThan21 return true if (x, y) more than 21
@@ -45,8 +45,9 @@ func getNumberOfPoint(startX, startY int) int {
 			tx := startX + dx
 			ty := startY + dy
 
-			if tx >= 0 && ty >= 0 && tx < x && ty < y && isLessThan21(tx, ty) && flags[tx][ty] == false {
-				flags[tx][ty] = true
+			str := string(tx) + "_" + string(ty)
+			if isLessThan21(tx, ty) && flags[str] == false {
+				flags[str] = true
 				ans++
 				getNumberOfPoint(tx, ty)
 			}
@@ -61,14 +62,7 @@ func main() {
 		flag.Usage()
 		return
 	}
-	flags = make([][]bool, x)
-	for i := 0; i < x; i++ {
-		subArray := make([]bool, y)
-		for j := range subArray {
-			subArray[j] = false
-		}
-		flags[i] = subArray
-	}
-	ret := getNumberOfPoint(0, 0)
+	flags = make(map[string]bool)
+	ret := getNumberOfPoint(x, y)
 	fmt.Println(ret)
 }
