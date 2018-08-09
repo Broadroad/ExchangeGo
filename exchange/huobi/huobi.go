@@ -38,6 +38,13 @@ func NewHuobi(client *http.Client, apikey, secretkey, accountId string) *Huobi {
 	return hb
 }
 
+// Close close fcoin websocket
+func (hb *Huobi) Close() {
+	if hb.ws != nil {
+		hb.ws.Close()
+	}
+}
+
 func (hb *Huobi) createWsConn() {
 	if hb.ws != nil {
 		return
@@ -85,6 +92,7 @@ func (hb *Huobi) createWsConn() {
 		}
 
 		tick := datamap["tick"].(map[string]interface{})
+		fmt.Println(tick)
 
 		low, isok := tick["low"].(float64)
 		if !isok {
@@ -105,7 +113,7 @@ func (hb *Huobi) GetTickerWithWs(pair CurrencyPair, handle func(ticker *Ticker))
 	sub := fmt.Sprintf("market.%s.detail", strings.ToLower(pair.ToSymbol("")))
 	hb.wsTickerHandleMap[sub] = handle
 	return hb.ws.Subscribe(map[string]interface{}{
-		"id":  1,
+		"id":  12,
 		"sub": sub})
 }
 
