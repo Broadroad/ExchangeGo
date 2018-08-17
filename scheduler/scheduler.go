@@ -76,7 +76,15 @@ func (s *scheduler) Schedule() {
 func (s *scheduler) schedule() {
 	if s.sc.Enablehuobi {
 		s.hb.GetTickerWithWs(common.BTC_USDT, func(ticker *common.Ticker) {
+			// TODO: store them with mysql
 			log.Println("get result")
+			log.Println(ticker)
+		})
+	}
+	if s.sc.Enablefc {
+		s.fc.GetTickerWithWs(common.BTC_USDT, func(ticker *common.Ticker) {
+			// TODO: store them with mysql
+			log.Println("get result from fcoin with ws")
 			log.Println(ticker)
 		})
 	}
